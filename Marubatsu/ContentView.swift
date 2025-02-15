@@ -22,12 +22,24 @@ struct ContentView: View {
         Quiz(question: "Xcode画面の右側にはユーティリティーズがある", answer: true),
         Quiz(question: "Textは文字列を表示する際に利用する", answer: true)
     ]
+    
+    @AppStorage("quiz") var quizzesData = Data() // UserDefaultsから問題を読み込む（Data型）
+    @State var quizzesArray: [Quiz] = [] // 問題を入れておく配列
+    
     @State var currentQuestionNum: Int = 0 //今、何問目の数字
     @State var showingAlert = false //アラートの表示・非表示を管理
     @State var alertTitle = "" // "正解"か"不正解"の文字を入れる用の変数
     
+    //　起動時にquizzesDateに読み込んだ値（Data型）を[Quiz]型にデコードしてquizzesArrayに入れる
+    init(){
+        if let decodedQuizzes = try? JSONDecoder().decode([Quiz].self, from: quizzesData){
+            _quizzesArray = State(initialValue: decodedQuizzes)
+        }
+    }
+    
     var body: some View {
         GeometryReader { geometry in
+            NavigationStack {
             VStack {
                 Text(showQuestion()) //問題文を表示
                     .padding() //余白の余裕
@@ -67,30 +79,49 @@ struct ContentView: View {
                 }
             }
             .padding()
-            //ズレを直すために親ビューのサイズをVStackに適用
-            .frame(width: geometry.size.width, height: geometry.size.height)
-            
+            .navigationTitle("マルバツクイズ")//ナビゲーションバーにタイトル設定
             //回答時のアラート
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("OK", role: .cancel) {/*　今回は処理なし　*/}
             }
+            //問題作成画面へ遷移するためのボタンを設置
+            .toolbar{
+                //配置する場所を画面最上部のバーの右端に設定
+                ToolbarItem( placement: .topBarTrailing) {
+                    NavigationLink {
+                        CreateView(quizzesArray: $quizzesArray) //遷移先の画面
+                            .navigationTitle("問題を作ろう")
+                    } label: {
+                        // 画面に遷移するためのボタンの見た目
+                        Image(systemName: "plus")
+                            .font(.title)
+                    }
+                }
+            }
+        }
         }
     }
     // 問題を表示するための関数
     func showQuestion() -> String {
-        let question = quizeExamples[currentQuestionNum].question
+        var question = "問題を作成してください"
+        //問題が書かれているかどうかのチェック
+        if !quizzesArray.isEmpty{
+            let quiz = quizzesArray[currentQuestionNum]
+            question = quiz.question
+        }
         return question
     }
     
     // 回答をチェックするためのカンス
     //　正解なら次の問題を表示します
     func checkAnswer(yourAnswer: Bool) {
-        let quiz = quizeExamples[currentQuestionNum]
+        if quizzesArray.isEmpty {return} //問題がないときは解答チェックしない
+        let quiz = quizzesArray[currentQuestionNum]
         let ans = quiz.answer
         if yourAnswer == ans { //正解のとき
             alertTitle = "正解！"
             // 現在の問題番号が問題数を超えないように場合分け
-            if currentQuestionNum + 1 < quizeExamples.count {
+            if currentQuestionNum + 1 < quizzesArray.count {
                 currentQuestionNum += 1 //次の問題に進む
             }else{
                 // 超えるときは０に戻す
