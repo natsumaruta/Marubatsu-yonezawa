@@ -101,6 +101,8 @@ struct ContentView: View {
         }
         }
     }
+    
+    
     // 問題を表示するための関数
     func showQuestion() -> String {
         var question = "問題を作成してください"
