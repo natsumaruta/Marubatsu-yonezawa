@@ -25,7 +25,6 @@ struct ContentView: View {
     
     @AppStorage("quiz") var quizzesData = Data() // UserDefaultsから問題を読み込む（Data型）
     @State var quizzesArray: [Quiz] = [] // 問題を入れておく配列
-    
     @State var currentQuestionNum: Int = 0 //今、何問目の数字
     @State var showingAlert = false //アラートの表示・非表示を管理
     @State var alertTitle = "" // "正解"か"不正解"の文字を入れる用の変数
@@ -78,6 +77,9 @@ struct ContentView: View {
                     
                 }
             }
+            .onAppear{
+                currentQuestionNum = 0 //onAppearで配列を初期化
+            }
             .padding()
             .navigationTitle("マルバツクイズ")//ナビゲーションバーにタイトル設定
             //回答時のアラート
@@ -114,7 +116,7 @@ struct ContentView: View {
         return question
     }
     
-    // 回答をチェックするためのカンス
+    // 回答をチェックするための関数
     //　正解なら次の問題を表示します
     func checkAnswer(yourAnswer: Bool) {
         if quizzesArray.isEmpty {return} //問題がないときは解答チェックしない

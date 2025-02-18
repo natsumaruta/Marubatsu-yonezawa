@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct CreateView: View {
-    
-    @Binding var quizzesArray: [Quiz] // 回答画面で読み込んだ問題を受け取る
+    @AppStorage("quiz") var quizzesData = Data() // UserDefaultsから問題を読み込む（Data型）
+    @Binding var quizzesArray: [Quiz]// 回答画面で読み込んだ問題を受け取る
     @State private var questionText = "" //　テキストフィールドの文字を受け取る
     @State private var selectedAnswer = "◯" // ピッカーで選ばれた解答を受け取る
     let answers = ["◯","✗"] //ピッカーの選択肢
-    // "QuizData"というキーでUserDefaultsに保存されたものを監視
-    @AppStorage("QuizData") private var QuizData: Data = Data()
+    
     
     var body: some View {
         VStack {
@@ -124,16 +123,16 @@ struct CreateView: View {
     // 並び替え処理と　並び替え後の保存
     func replaceRow(_ from: IndexSet, _ to: Int){
         quizzesArray.move(fromOffsets: from, toOffset: to)
-        if let encodedArray = try? JSONEncoder().encode(quizzesArray){
-            QuizData = encodedArray //　エンコードできたらAppStrageに渡す
+        if let encodedQuizzes = try? JSONEncoder().encode(quizzesArray){
+            quizzesData = encodedQuizzes //　エンコードできたらAppStrageに渡す
         }
     }
     // 行を削除する処理　と　削除後の保存
     func rowRemove(offsets:IndexSet){
         var array = quizzesArray //quizzesArrayを一時的に別の変数「array」へ
         array.remove(atOffsets: offsets) // 一時的な配列「array」からタスクを削除
-        if let encodedArray = try? JSONEncoder().encode(array){
-            UserDefaults.standard.setValue(encodedArray, forKey: "QuizData") // UserDefaultsに保存
+        if let encodedQuizzes = try? JSONEncoder().encode(array){
+            UserDefaults.standard.setValue(encodedQuizzes, forKey: "quiz") // UserDefaultsに保存
             quizzesArray = array //　エンコードできたらAppStrageに渡す
         }
     }
