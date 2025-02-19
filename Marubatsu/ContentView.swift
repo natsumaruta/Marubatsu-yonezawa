@@ -16,13 +16,6 @@ struct Quiz: Identifiable, Codable {
 
 struct ContentView: View {
     
-    // 問題
-    let quizeExamples: [Quiz] = [
-        Quiz(question: "iPhoneアプリを開発する統合環境はZcodeである", answer: false),
-        Quiz(question: "Xcode画面の右側にはユーティリティーズがある", answer: true),
-        Quiz(question: "Textは文字列を表示する際に利用する", answer: true)
-    ]
-    
     @AppStorage("quiz") var quizzesData = Data() // UserDefaultsから問題を読み込む（Data型）
     @State var quizzesArray: [Quiz] = [] // 問題を入れておく配列
     @State var currentQuestionNum: Int = 0 //今、何問目の数字
@@ -77,9 +70,6 @@ struct ContentView: View {
                     
                 }
             }
-            .onAppear{
-                currentQuestionNum = 0 //onAppearで配列を初期化
-            }
             .padding()
             .navigationTitle("マルバツクイズ")//ナビゲーションバーにタイトル設定
             //回答時のアラート
@@ -91,7 +81,8 @@ struct ContentView: View {
                 //配置する場所を画面最上部のバーの右端に設定
                 ToolbarItem( placement: .topBarTrailing) {
                     NavigationLink {
-                        CreateView(quizzesArray: $quizzesArray) //遷移先の画面
+                        CreateView(quizzesArray: $quizzesArray,
+                                   currentQuestionNum: $currentQuestionNum) //CreateViewに変数を渡す
                             .navigationTitle("問題を作ろう")
                     } label: {
                         // 画面に遷移するためのボタンの見た目

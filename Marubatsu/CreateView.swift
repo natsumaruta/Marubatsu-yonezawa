@@ -13,6 +13,7 @@ struct CreateView: View {
     @State private var questionText = "" //　テキストフィールドの文字を受け取る
     @State private var selectedAnswer = "◯" // ピッカーで選ばれた解答を受け取る
     let answers = ["◯","✗"] //ピッカーの選択肢
+    @Binding var currentQuestionNum: Int //回答画面で読み込んだ問題の配列番号を受け取る
     
     
     var body: some View {
@@ -113,27 +114,31 @@ struct CreateView: View {
         array.append(newQuiz) //作った問題を配列に追加
         let storekey = "quiz" //UserDefaultsに保存するためのキー
         
-        // エンコードできたら保存して配列も更新
+        // エンコードできたら保存して配列も配列番号も更新
         if let encodedQuizzes = try? JSONEncoder().encode(array) {
             UserDefaults.standard.setValue(encodedQuizzes, forKey: storekey)
             questionText = "" //テキストフィールドも空白に戻しておく
             quizzesArray = array //[既存の問題　＋　新問題]となった配列に更新
+            currentQuestionNum = 0 //配列の番号を０にする
         }
     }
-    // 並び替え処理と　並び替え後の保存
+    // 並び替え処理　と　並び替え後の保存　、配列番号をリセットする
     func replaceRow(_ from: IndexSet, _ to: Int){
         quizzesArray.move(fromOffsets: from, toOffset: to)
         if let encodedQuizzes = try? JSONEncoder().encode(quizzesArray){
+            UserDefaults.standard.setValue(encodedQuizzes, forKey: "quiz")// エンコードできたらUserDefaultsに保存
             quizzesData = encodedQuizzes //　エンコードできたらAppStrageに渡す
+            currentQuestionNum = 0 //配列の番号を０にする
         }
     }
-    // 行を削除する処理　と　削除後の保存
+    // 行を削除する処理　と　削除後の保存　、配列番号をリセットする
     func rowRemove(offsets:IndexSet){
         var array = quizzesArray //quizzesArrayを一時的に別の変数「array」へ
         array.remove(atOffsets: offsets) // 一時的な配列「array」からタスクを削除
         if let encodedQuizzes = try? JSONEncoder().encode(array){
             UserDefaults.standard.setValue(encodedQuizzes, forKey: "quiz") // UserDefaultsに保存
             quizzesArray = array //　エンコードできたらAppStrageに渡す
+            currentQuestionNum = 0 //配列の番号を０にする
         }
     }
 }
