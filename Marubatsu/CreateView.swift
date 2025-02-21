@@ -125,9 +125,11 @@ struct CreateView: View {
     // 並び替え処理　と　並び替え後の保存　、配列番号をリセットする
     func replaceRow(_ from: IndexSet, _ to: Int){
         quizzesArray.move(fromOffsets: from, toOffset: to)
-        if let encodedQuizzes = try? JSONEncoder().encode(quizzesArray){
+        var array = quizzesArray //quizzesArrayを一時的に別の変数「array」へ
+        array.move(fromOffsets: from, toOffset: to) // 一時的な配列「array」からタスクを削除
+        if let encodedQuizzes = try? JSONEncoder().encode(array){
             UserDefaults.standard.setValue(encodedQuizzes, forKey: "quiz")// エンコードできたらUserDefaultsに保存
-            quizzesData = encodedQuizzes //　エンコードできたらAppStrageに渡す
+            quizzesArray = array //　エンコードできたらAppStrageに渡す
             currentQuestionNum = 0 //配列の番号を０にする
         }
     }
